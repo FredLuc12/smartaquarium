@@ -1,37 +1,87 @@
-<header>
-    <nav>
-        <h2>🐠 Smart Aquarium</h2>
-        <ul>
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Capteurs</a></li>
-            <li><a href="#">Paramètres</a></li>
-        </ul>
-    </nav>
+<header class="sidebar">
+  <div class="sidebar-brand">
+    <span class="sidebar-logo">🐠</span>
+    <span class="sidebar-title">Smart | AQ</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#"><span class="icon">👤</span><span>Profil</span></a>
+    <a href="#"><span class="icon">📊</span><span>Dashboard</span></a>
+    <a href="#"><span class="icon">🛰️</span><span>Capteurs</span></a>
+    <a href="#"><span class="icon">⚙️</span><span>Paramètres</span></a>
+  </nav>
+
+  <a href="#" class="logout-link">
+    <span class="icon">🚪</span>
+    <span>Déconnexion</span>
+  </a>
 </header>
+
 <style>
-    header {
-        background-color: #0077be;
-        color: white;
-        padding: 10px 0;
+    .sidebar {
+    width: 220px;
+    background-color: #0077be;
+    color: white;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
     }
-    nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
+
+    .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding: 10px 8px;
+    border-radius: 10px;
+    background: #020617;          /* fond noir/anthracite */
     }
-    ul {
-        list-style: none;
-        display: flex;
-        gap: 15px;
+
+    .sidebar-logo {
+    font-size: 22px;
     }
-    a {
-        color: white;
-        text-decoration: none;
-        font-weight: bold;
+
+    .sidebar-title {
+    font-size: 16px;
+    font-weight: 700;
     }
-    a:hover {
-        text-decoration: underline;
+
+    .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;                       /* pousse le logout vers le bas */
     }
+
+    .sidebar-nav a,
+    .logout-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .sidebar-nav a .icon,
+    .logout-link .icon {
+    width: 22px;
+    text-align: center;
+    }
+
+    .sidebar-nav a:hover,
+    .logout-link:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateX(4px);
+    }
+
+    .logout-link {
+    margin-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    padding-top: 12px;
+    }
+</style>

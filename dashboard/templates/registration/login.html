@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Connexion | Smart Aquarium</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #003f8c, #00a0c6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      .login-shell {
+        width: 100%;
+        max-width: 420px;
+        padding: 24px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        color: #fff;
+      }
+
+      .brand-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ffb347, #ff6a00);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        color: #003f8c;
+      }
+
+      .brand-title {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      .login-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 24px 26px 22px;
+        box-shadow: 0 14px 45px rgba(0, 0, 0, 0.25);
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 18px;
+      }
+
+      .login-header h2 {
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+
+      .login-header p {
+        margin: 0;
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      form p {
+        margin: 0 0 12px;
+        font-size: 14px;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 4px;
+        padding: 7px 10px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        font-size: 14px;
+        outline: none;
+      }
+
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        border-color: #0077c2;
+        box-shadow: 0 0 0 1px rgba(0, 119, 194, 0.16);
+      }
+
+      .login-footer {
+        margin-top: 10px;
+      }
+
+      .login-footer button {
+        width: 100%;
+        padding: 9px 0;
+        background: #0077c2;
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.05s ease;
+      }
+
+      .login-footer button:hover {
+        background: #005fa0;
+        transform: translateY(-1px);
+      }
+
+      .login-meta {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 12px;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="login-shell">
+      <div class="brand">
+        <div class="brand-logo">🐟</div>
+        <div class="brand-title">Smart Aquarium</div>
+      </div>
+
+      <div class="login-card">
+        <div class="login-header">
+          <h2>Connexion</h2>
+          <p>Accédez à votre tableau de bord d’aquarium connecté</p>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <div class="login-footer">
+            <button type="submit">Se connecter</button>
+          </div>
+        </form>
+
+        <div class="login-meta">
+          Gestion des capteurs, alertes et historique en un coup d’œil.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
