@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Smart Aquarium{% endblock %}</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    {% include "partials/header.html" %}
+
+    <!-- CONTENU PRINCIPAL -->
+    <main>{% block content %} {% endblock %}</main>
+
+    <!-- FOOTER -->
+    {% include "partials/footer.html" %}
+  </body>
+</html>
