@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Capteurs | Smart Aquarium{% endblock %}
+{% block extra_css %}
+<style>
+  .sensors-layout {
+    display: grid;
+    grid-template-columns: 2.1fr 1.1fr;
+    gap: 24px;
+  }
+
+  .sensors-list h1 {
+    margin-top: 0;
+    margin-bottom: 6px;
+  }
+
+  .sensors-subtitle {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: #6b7280;
+  }
+
+  .sensors-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+    font-size: 14px;
+  }
+
+  .sensors-table thead {
+    background: #f1f5f9;
+  }
+
+  .sensors-table th,
+  .sensors-table td {
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  .sensors-table tbody tr:nth-child(even) {
+    background: #f9fafb;
+  }
+
+  .empty-row {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-active {
+    background: #ecfdf3;
+    color: #166534;
+  }
+
+  .badge-inactive {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+
+  .actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .btn-xs {
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: none;
+    background: #e5e7eb;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .btn-xs:hover {
+    background: #d1d5db;
+  }
+
+  .link-xs {
+    font-size: 12px;
+    color: #0077c2;
+    text-decoration: none;
+  }
+
+  .link-xs:hover {
+    text-decoration: underline;
+  }
+
+  .sensor-detail {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+    font-size: 14px;
+  }
+
+  .sensor-detail h2 {
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+
+  .sensor-detail .placeholder {
+    margin: 0;
+    color: #9ca3af;
+  }
+
+  .sensors-layout {
+    margin-top: 32px;          /* ajoute de l’air sous le header */
+  }
+
+  .sensors-table {
+    max-width: 900px;          /* évite de s’étirer */
+    margin-top: 16px;
+  }
+  .sensors-layout { margin-top: 0; }
+  .page-container {
+      width: 100%;
+      max-width: 1100px;
+      margin-top: 0;
+  }
+
+
+  .btn-primary { background:#2563eb; color:white; }
+  .btn-primary:hover { background:#1d4ed8; }
+  .btn-danger { background:#dc2626; color:white; }
+  .btn-danger:hover { background:#b91c1c; }
+  .btn-outline { background:transparent; border:1px solid #9ca3af; }
+  .btn-outline:hover { background:#f3f4f6; }
+</style>
+{% endblock %}
+
+{% block content %}
+  <section class="sensors-layout">
+    <!-- Liste des capteurs -->
+    <div class="page-container">
+      <div class="sensors-list">
+        <h1>Capteurs</h1>
+        <p class="sensors-subtitle">
+          Gérez vos capteurs et consultez leur état en temps réel.
+        </p>
+
+        <table class="sensors-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Type</th>
+              <th>État</th>
+              <th>Dernière valeur</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Température eau #1</td>
+              <td>Sonde thermique</td>
+              <td>
+                <span class="badge badge-active">Actif</span>
+              </td>
+              <td>24.3 °C</td>
+              <td class="actions">
+                <button class="btn-xs btn-outline">Renommer</button>
+                <button class="btn-xs btn-danger">Supprimer</button>
+                <button class="btn-xs btn-primary">Consulter l’historique</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Détail du capteur -->
+    <aside class="sensor-detail">
+      <h2>Détail du capteur</h2>
+      <p class="placeholder">
+        Sélectionnez un capteur dans la liste pour voir ses valeurs et son historique.
+      </p>
+    </aside>
+  </section>
+{% endblock %}

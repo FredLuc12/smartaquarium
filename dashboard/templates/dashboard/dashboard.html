@@ -1,13 +1,191 @@
 {% extends "base.html" %}
 
-{% block title %}
-Dashboard | Smart Aquarium
+{% block title %}Dashboard | Smart Aquarium{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr;
+    gap: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 22px;
+    box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+    font-size: 14px;
+  }
+
+  .card h2 {
+    margin: 0 0 10px;
+  }
+
+  .card-subtitle {
+    margin: 0 0 18px;
+    color: #6b7280;
+    font-size: 13px;
+  }
+
+  .alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .alert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fef2f2;
+  }
+
+  .alert-title {
+    font-weight: 600;
+  }
+
+  .alert-meta {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .badge-critical {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #b91c1c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-warning {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #f97316;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .actuators-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .actuator-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f9fafb;
+  }
+
+  .actuator-label {
+    font-weight: 500;
+  }
+
+  .toggle {
+    position: relative;
+    width: 46px;
+    height: 24px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    cursor: pointer;
+  }
+
+  .toggle::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  }
+
+  .toggle.is-on {
+    background: #22c55e;
+  }
+
+  .toggle.is-on::before {
+    transform: translateX(20px);
+  }
+
+  .btn-link {
+    border: none;
+    background: none;
+    color: #2563eb;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<h1>Dashboard Smart Aquarium</h1>
+<section class="dashboard-grid">
+  <!-- Bloc alertes -->
+  <div class="card">
+    <h2>Alertes en cours</h2>
+    <p class="card-subtitle">Surveillez les seuils critiques de votre aquarium.</p>
 
-<section>
-  <p>Bienvenue sur le tableau de bord de votre aquarium intelligent.</p>
+    <div class="alert-list">
+      <div class="alert-item">
+        <div>
+          <div class="alert-title">Température trop élevée</div>
+          <div class="alert-meta">28.7 °C • Seuil : 27 °C • il y a 3 min</div>
+        </div>
+        <span class="badge-critical">Critique</span>
+      </div>
+
+      <div class="alert-item" style="background:#fffbeb;">
+        <div>
+          <div class="alert-title">pH en dehors de la zone de confort</div>
+          <div class="alert-meta">pH 6.3 • Zone cible : 6.8 – 7.4</div>
+        </div>
+        <span class="badge-warning">Avertissement</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bloc actionneurs -->
+  <div class="card">
+    <h2>Contrôle des actionneurs</h2>
+    <p class="card-subtitle">Pilotez les équipements de l’aquarium.</p>
+
+    <div class="actuators-list">
+      <div class="actuator-item">
+        <div>
+          <div class="actuator-label">Pompe de filtration</div>
+          <div class="alert-meta">Mode manuel • Dernière action : il y a 5 min</div>
+        </div>
+        <div class="toggle is-on"></div>
+      </div>
+
+      <div class="actuator-item">
+        <div>
+          <div class="actuator-label">Éclairage LED</div>
+          <div class="alert-meta">Planning 08:00 – 20:00</div>
+        </div>
+        <div class="toggle"></div>
+      </div>
+
+      <div class="actuator-item">
+        <div>
+          <div class="actuator-label">Nourrisseur automatique</div>
+          <div class="alert-meta">Prochaine distribution : 19:30</div>
+        </div>
+        <button class="btn-link">Déclencher maintenant</button>
+      </div>
+    </div>
+  </div>
 </section>
 {% endblock %}

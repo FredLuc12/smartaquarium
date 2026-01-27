@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres | Smart Aquarium{% endblock %}
+
+{% block extra_css %}
+<style>
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.4fr;
+    gap: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 22px;
+    box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+    font-size: 14px;
+  }
+
+  .card h2 {
+    margin: 0 0 8px;
+  }
+
+  .card-subtitle {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  /* Graphiques temps réel (placeholder) */
+  .chart-area {
+    height: 220px;
+    border-radius: 12px;
+    background: linear-gradient(135deg,#e0f2fe,#eff6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1d4ed8;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  /* Simulations de panne */
+  .simulation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .simulation-item {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .simulation-label {
+    font-weight: 500;
+  }
+
+  .simulation-meta {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .btn-simulate {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: none;
+    background: #0ea5e9;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-simulate:hover {
+    background: #0284c7;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="settings-grid">
+
+  <!-- Graphiques temps réel -->
+  <div class="card">
+    <h2>Graphiques temps réel</h2>
+    <p class="card-subtitle">
+      Visualisez en direct les valeurs des capteurs connectés.
+    </p>
+
+    <div class="chart-area">
+      Zone graphique (placeholder) – le backend branchera un vrai flux plus tard
+    </div>
+  </div>
+
+  <!-- Simulations de panne -->
+  <div class="card">
+    <h2>Simulations de panne</h2>
+    <p class="card-subtitle">
+      Testez le comportement de reprise automatique de l’aquarium.
+    </p>
+
+    <div class="simulation-list">
+      <div class="simulation-item">
+        <div>
+          <div class="simulation-label">Coupure de la pompe principale</div>
+          <div class="simulation-meta">
+            Durée simulée : 2 min • Reprise automatique attendue
+          </div>
+        </div>
+        <button class="btn-simulate">Lancer la simulation</button>
+      </div>
+
+      <div class="simulation-item">
+        <div>
+          <div class="simulation-label">Perte du capteur de température</div>
+          <div class="simulation-meta">
+            Mode dégradé : maintien des derniers réglages
+          </div>
+        </div>
+        <button class="btn-simulate">Lancer la simulation</button>
+      </div>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
