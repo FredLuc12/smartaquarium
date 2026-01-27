@@ -5,13 +5,13 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="#"><span class="icon">👤</span><span>Profil</span></a>
-    <a href="#"><span class="icon">📊</span><span>Dashboard</span></a>
-    <a href="#"><span class="icon">🛰️</span><span>Capteurs</span></a>
-    <a href="#"><span class="icon">⚙️</span><span>Paramètres</span></a>
+    <a href="{% url 'profile' %}"><span class="icon">👤</span><span>Profil</span></a>
+    <a href="{% url 'dashboard' %}"><span class="icon">📊</span><span>Dashboard</span></a>
+    <a href="{% url 'capteur' %}"><span class="icon">🛰️</span><span>Capteurs</span></a>
+    <a href="{% url 'settings' %}"><span class="icon">⚙️</span><span>Paramètres</span></a>
   </nav>
 
-  <a href="#" class="logout-link">
+  <a href="/logout/" class="logout-link">
     <span class="icon">🚪</span>
     <span>Déconnexion</span>
   </a>
