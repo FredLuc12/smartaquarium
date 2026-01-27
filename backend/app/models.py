@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Index, func
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Index
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -12,6 +12,9 @@ class Capteur(Base):
     type = Column(String(50), nullable=False)
     unite = Column(String(20), nullable=False)
     localisation = Column(String(100), nullable=True)
+    seuil_min = Column(Float, nullable=True)
+    seuil_max = Column(Float, nullable=True)
+    actif = Column(Boolean, default=True, nullable=False)
     
     def __repr__(self):
         return f"<Capteur {self.id}: {self.nom}>"
@@ -22,7 +25,7 @@ class Actionneur(Base):
     id = Column(Integer, primary_key=True, index=True)
     nom = Column(String(100), nullable=False)
     type = Column(String(50), nullable=False)
-    etat = Column(Boolean, default=False)
+    etat = Column(Boolean, default=False, nullable=False)
     derniere_mise_a_jour = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
@@ -52,9 +55,28 @@ class HistoriqueCommande(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     actionneur_id = Column(Integer, ForeignKey("actionneurs.id", ondelete="CASCADE"), nullable=False)
-    commande = Column(String(10), nullable=False)  # 'ON', 'OFF'
-    source = Column(String(50), nullable=False)     # 'front', 'auto', 'arduino'
+    commande = Column(String(10), nullable=False)
+    source = Column(String(50), nullable=False)
     horodatage = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     def __repr__(self):
         return f"<Commande {self.id}: {self.commande} @ {self.horodatage}>"
+
+class Alerte(Base):
+    __tablename__ = "alertes"
+    __table_args__ = (
+        Index('idx_alertes_capteur_id', 'capteur_id'),
+        Index('idx_alertes_niveau', 'niveau'),
+    )
+    
+    id = Column(Integer, primary_key=True, index=True)
+    capteur_id = Column(Integer, ForeignKey("capteurs.id", ondelete="CASCADE"), nullable=False)
+    niveau = Column(String(20), nullable=False)
+    message = Column(String(255), nullable=False)
+    horodatage = Column(DateTime, default=datetime.utcnow, nullable=False)
+    acquitte_par = Column(Integer, nullable=True)
+    acquitte_le = Column(DateTime, nullable=True)
+    resolue = Column(Boolean, default=False, nullable=False)
+    
+    def __repr__(self):
+        return f"<Alerte {self.id}: {self.niveau} - {self.message}>"
