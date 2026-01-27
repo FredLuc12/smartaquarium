@@ -4,14 +4,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm
-from .models import SensorData
-
-
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import SensorData
-from .forms import ProfileForm
+from .models import Capteur, Mesure, Actionneur, Alerte
+from django.shortcuts import get_object_or_404, redirect
 
 @login_required
 def dashboard_view(request):
@@ -46,3 +40,40 @@ def settings_view(request):
 def sensors_api(request):
     data = list(SensorData.objects.values().order_by("-created_at")[:10])
     return JsonResponse(data, safe=False)
+
+from .models import Capteur
+
+@login_required
+def capteur_view(request):
+    capteurs = Capteur.objects.all().order_by("nom")
+    return render(request, "dashboard/sensors.html", {"capteurs": capteurs})
+
+from .models import Alerte
+
+@login_required
+def dashboard_view(request):
+    alertes = Alerte.objects.select_related("capteur").order_by("-horodatage")[:5]
+    actionneurs = Actionneur.objects.all().order_by("nom")
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        {"alertes": alertes, "actionneurs": actionneurs},
+    )
+
+@login_required
+def toggle_actionneur_view(request, pk):
+    if request.method != "POST":
+        # On ne permet que le POST pour modifier l'état
+        return redirect("dashboard")
+
+    # 1) récupérer l’actionneur
+    actionneur = get_object_or_404(Actionneur, pk=pk)
+
+    # 2) inverser son état
+    actionneur.etat = not actionneur.etat
+
+    # 3) sauver
+    actionneur.save()
+
+    # 4) rediriger vers le dashboard (ou la page d’où vient la requête)
+    return redirect("dashboard/settings")

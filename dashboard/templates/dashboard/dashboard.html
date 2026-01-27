@@ -138,21 +138,25 @@
     <p class="card-subtitle">Surveillez les seuils critiques de votre aquarium.</p>
 
     <div class="alert-list">
-      <div class="alert-item">
-        <div>
-          <div class="alert-title">Température trop élevée</div>
-          <div class="alert-meta">28.7 °C • Seuil : 27 °C • il y a 3 min</div>
+      {% for alerte in alertes %}
+        <div class="alert-item {% if alerte.niveau == 'warning' %}alert-warning{% endif %}">
+          <div>
+            <div class="alert-title">
+              {{ alerte.capteur.nom }} – {{ alerte.message }}
+            </div>
+            <div class="alert-meta">
+              {{ alerte.horodatage|date:"d/m/Y H:i" }}
+            </div>
+          </div>
+          {% if alerte.niveau == 'critical' %}
+            <span class="badge-critical">Critique</span>
+          {% else %}
+            <span class="badge-warning">Avertissement</span>
+          {% endif %}
         </div>
-        <span class="badge-critical">Critique</span>
-      </div>
-
-      <div class="alert-item" style="background:#fffbeb;">
-        <div>
-          <div class="alert-title">pH en dehors de la zone de confort</div>
-          <div class="alert-meta">pH 6.3 • Zone cible : 6.8 – 7.4</div>
-        </div>
-        <span class="badge-warning">Avertissement</span>
-      </div>
+      {% empty %}
+        <p class="alert-meta">Aucune alerte récente.</p>
+      {% endfor %}
     </div>
   </div>
 
@@ -162,29 +166,23 @@
     <p class="card-subtitle">Pilotez les équipements de l’aquarium.</p>
 
     <div class="actuators-list">
-      <div class="actuator-item">
-        <div>
-          <div class="actuator-label">Pompe de filtration</div>
-          <div class="alert-meta">Mode manuel • Dernière action : il y a 5 min</div>
+      {% for act in actionneurs %}
+        <div class="actuator-item">
+          <div>
+            <div class="actuator-label">{{ act.nom }}</div>
+            <div class="alert-meta">
+              Type : {{ act.type }} • État actuel :
+              {% if act.etat %}ON{% else %}OFF{% endif %}
+            </div>
+          </div>
+          <form method="post" action="{% url 'actionneur_toggle' act.id %}">
+            {% csrf_token %}
+            <button type="submit" class="toggle {% if act.etat %}is-on{% endif %}"></button>
+          </form>
         </div>
-        <div class="toggle is-on"></div>
-      </div>
-
-      <div class="actuator-item">
-        <div>
-          <div class="actuator-label">Éclairage LED</div>
-          <div class="alert-meta">Planning 08:00 – 20:00</div>
-        </div>
-        <div class="toggle"></div>
-      </div>
-
-      <div class="actuator-item">
-        <div>
-          <div class="actuator-label">Nourrisseur automatique</div>
-          <div class="alert-meta">Prochaine distribution : 19:30</div>
-        </div>
-        <button class="btn-link">Déclencher maintenant</button>
-      </div>
+      {% empty %}
+        <p class="alert-meta">Aucun actionneur configuré pour le moment.</p>
+      {% endfor %}
     </div>
   </div>
 </section>

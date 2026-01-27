@@ -162,20 +162,34 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Température eau #1</td>
-              <td>Sonde thermique</td>
-              <td>
-                <span class="badge badge-active">Actif</span>
-              </td>
-              <td>24.3 °C</td>
-              <td class="actions">
-                <button class="btn-xs btn-outline">Renommer</button>
-                <button class="btn-xs btn-danger">Supprimer</button>
-                <button class="btn-xs btn-primary">Consulter l’historique</button>
-              </td>
-            </tr>
+            {% for capteur in capteurs %}
+              <tr>
+                <td>{{ capteur.nom }}</td>
+                <td>{{ capteur.type }}</td>
+                <td>
+                  <span class="badge {% if capteur.actif %}badge-active{% else %}badge-inactive{% endif %}">
+                    {% if capteur.actif %}Actif{% else %}Inactif{% endif %}
+                  </span>
+                </td>
+                <td>
+                  <!-- en attendant vraie dernière mesure -->
+                  —
+                </td>
+                <td class="actions">
+                  <button class="btn-xs btn-outline">Renommer</button>
+                  <button class="btn-xs btn-danger">Supprimer</button>
+                  <button class="btn-xs btn-primary">Consulter l’historique</button>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="empty-row">
+                  Aucun capteur pour le moment.
+                </td>
+              </tr>
+            {% endfor %}
           </tbody>
+
         </table>
       </div>
     </div>

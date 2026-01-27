@@ -19,7 +19,7 @@ from django.shortcuts import redirect
 from django.urls import path, include
 from django.contrib.auth.views import LogoutView
 
-from dashboard.views import capteur_view, profile_view, settings_view
+from dashboard.views import capteur_view, profile_view, settings_view, dashboard_view, toggle_actionneur_view
 
 urlpatterns = [
     path("", lambda request: redirect("/accounts/login/")),
@@ -30,4 +30,5 @@ urlpatterns = [
     path("parametres/", settings_view, name="settings"),
     path("capteur/", capteur_view, name="capteur"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("actionneurs/<int:pk>/toggle/", toggle_actionneur_view, name="actionneur_toggle")
 ]
