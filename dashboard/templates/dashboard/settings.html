@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres | Smart Aquarium{% endblock %}
+
+{% block extra_css %}
+<style>
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.4fr;
+    gap: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 22px;
+    box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+    font-size: 14px;
+  }
+
+  .card h2 {
+    margin: 0 0 8px;
+  }
+
+  .card-subtitle {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  .chart-area {
+    height: 300px;
+    border-radius: 12px;
+    background: #f9fafb;
+    padding: 16px;
+  }
+
+  .simulation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .simulation-item {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .simulation-label {
+    font-weight: 500;
+  }
+
+  .simulation-meta {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .btn-simulate {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: none;
+    background: #0ea5e9;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-simulate:hover {
+    background: #0284c7;
+  }
+
+  .btn-simulate:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .stat-card {
+    background: #f0f9ff;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0284c7;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  .success-msg {
+    background: #ecfdf3;
+    color: #166534;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
+  .error-msg {
+    background: #fef2f2;
+    color: #b91c1c;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="settings-grid">
+
+  <!-- Graphiques temps réel -->
+  <div class="card">
+    <h2>📊 Statistiques en temps réel</h2>
+    <p class="card-subtitle">
+      Données actuelles de votre aquarium
+    </p>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-value" id="capteurCount">-</div>
+        <div class="stat-label">Capteurs actifs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="mesureCount">-</div>
+        <div class="stat-label">Mesures aujourd'hui</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="actionneurCount">-</div>
+        <div class="stat-label">Actionneurs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="alerteCount">-</div>
+        <div class="stat-label">Alertes actives</div>
+      </div>
+    </div>
+
+    <div class="chart-area" id="chartArea">
+      <canvas id="tempChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Simulations et contrôles -->
+  <div class="card">
+    <h2>🧪 Tests & Simulations</h2>
+    <p class="card-subtitle">
+      Testez le comportement du système
+    </p>
+
+    <div class="simulation-list">
+      {% if actionneurs %}
+        {% for actionneur in actionneurs %}
+        <div class="simulation-item">
+          <div>
+            <div class="simulation-label">{{ actionneur.nom }}</div>
+            <div class="simulation-meta">
+              Type: {{ actionneur.type_actionneur }} • 
+              État: {% if actionneur.etat_actuel %}ON{% else %}OFF{% endif %}
+            </div>
+          </div>
+          <button class="btn-simulate" onclick="toggleActionneur({{ actionneur.id }}, {{ actionneur.etat_actuel|lower }})">
+            {% if actionneur.etat_actuel %}Éteindre{% else %}Allumer{% endif %}
+          </button>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="simulation-meta" style="text-align: center; padding: 20px;">
+          Aucun actionneur disponible
+        </div>
+      {% endif %}
+    </div>
+
+    <div id="simulationResult"></div>
+  </div>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const API_URL = 'http://localhost:8000';
+let tempChart = null;
+
+// Charge les statistiques
+async function loadStats() {
+  try {
+    // Capteurs
+    const capteurs = await fetch(`${API_URL}/api/capteurs/`).then(r => r.json());
+    document.getElementById('capteurCount').textContent = capteurs.filter(c => c.actif).length;
+    
+    // Mesures du jour
+    const mesures = await fetch(`${API_URL}/api/mesures/`).then(r => r.json());
+    const today = new Date().toISOString().split('T')[0];
+    const mesuresToday = mesures.filter(m => m.horodatage && m.horodatage.startsWith(today));
+    document.getElementById('mesureCount').textContent = mesuresToday.length;
+    
+    // Actionneurs
+    const actionneurs = await fetch(`${API_URL}/api/actionneurs/`).then(r => r.json());
+    document.getElementById('actionneurCount').textContent = actionneurs.length;
+    
+    // Alertes
+    const alertes = await fetch(`${API_URL}/api/alertes/active`).then(r => r.json());
+    document.getElementById('alerteCount').textContent = alertes.length;
+    
+    // Charge le graphique
+    loadTempChart();
+    
+  } catch (error) {
+    console.error('Erreur chargement stats:', error);
+  }
+}
+
+// Graphique température
+async function loadTempChart() {
+  try {
+    const mesures = await fetch(`${API_URL}/api/mesures/`).then(r => r.json());
+    
+    // Prend les 20 dernières mesures
+    const last20 = mesures.slice(-20);
+    
+    const labels = last20.map(m => {
+      const date = new Date(m.horodatage);
+      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    });
+    
+    const data = last20.map(m => m.valeur);
+    
+    const ctx = document.getElementById('tempChart').getContext('2d');
+    
+    if (tempChart) tempChart.destroy();
+    
+    tempChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Température (°C)',
+          data: data,
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true }
+        },
+        scales: {
+          y: { beginAtZero: false }
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Erreur chargement graphique:', error);
+  }
+}
+
+// Toggle actionneur
+async function toggleActionneur(actionneurId, currentState) {
+  const resultDiv = document.getElementById('simulationResult');
+  resultDiv.innerHTML = '<div style="text-align:center;padding:10px;">⏳ En cours...</div>';
+  
+  try {
+    const newState = !currentState;
+    const response = await fetch(`${API_URL}/api/actionneurs/${actionneurId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ etat_actuel: newState })
+    });
+    
+    if (response.ok) {
+      resultDiv.innerHTML = `<div class="success-msg">✅ Actionneur ${newState ? 'activé' : 'désactivé'} avec succès</div>`;
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      throw new Error('Erreur API');
+    }
+  } catch (error) {
+    resultDiv.innerHTML = `<div class="error-msg">❌ Erreur: ${error.message}</div>`;
+  }
+}
+
+// Auto-refresh toutes les 30 secondes
+setInterval(() => {
+  loadStats();
+}, 30000);
+
+// Charge au démarrage
+loadStats();
+</script>
+{% endblock %}

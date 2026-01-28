@@ -1,0 +1,18 @@
+# Django
+Django==5.0
+django-environ==0.11.2
+
+# Base de données
+psycopg2-binary==2.9.9
+
+# Serveur WSGI
+gunicorn==21.2.0
+
+# Requêtes HTTP
+requests==2.31.0
+
+# CORS
+django-cors-headers==4.3.1
+
+# Utilitaires
+python-dotenv==1.0.0

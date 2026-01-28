@@ -1,13 +1,334 @@
 {% extends "base.html" %}
 
-{% block title %}
-Dashboard | Smart Aquarium
+{% block title %}Dashboard | Smart Aquarium{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr;
+    gap: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 22px;
+    box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+    font-size: 14px;
+  }
+
+  .card h2 {
+    margin: 0 0 10px;
+  }
+
+  .card-subtitle {
+    margin: 0 0 18px;
+    color: #6b7280;
+    font-size: 13px;
+  }
+
+  .alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .alert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fef2f2;
+  }
+
+  .alert-title {
+    font-weight: 600;
+  }
+
+  .alert-meta {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .badge-critical {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #b91c1c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-warning {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #f97316;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .actuators-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .actuator-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f9fafb;
+  }
+
+  .actuator-label {
+    font-weight: 500;
+  }
+
+  .toggle {
+    position: relative;
+    width: 46px;
+    height: 24px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .toggle::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  }
+
+  .toggle.is-on {
+    background: #22c55e;
+  }
+
+  .toggle.is-on::before {
+    transform: translateX(20px);
+  }
+
+  .toggle.loading {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  .btn-link {
+    border: none;
+    background: none;
+    color: #2563eb;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: #9ca3af;
+    padding: 20px;
+    font-style: italic;
+  }
+
+  .alert-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #b91c1c;
+  }
+
+  .alert-success {
+    background: #ecfdf3;
+    border: 1px solid #86efac;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #166534;
+  }
+
+  #notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    display: none;
+    font-size: 14px;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .notification-success {
+    background: #ecfdf3;
+    color: #166534;
+    border: 1px solid #86efac;
+  }
+
+  .notification-error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<h1>Dashboard Smart Aquarium</h1>
+<!-- Message d'erreur API -->
+{% if api_error %}
+<div class="alert-error">
+  ⚠️ {{ api_error }} - <a href="http://localhost:8000/docs" target="_blank">Vérifier l'API</a>
+</div>
+{% endif %}
 
-<section>
-  <p>Bienvenue sur le tableau de bord de votre aquarium intelligent.</p>
+<!-- Notification toast -->
+<div id="notification"></div>
+
+<section class="dashboard-grid">
+  <!-- Bloc alertes -->
+  <div class="card">
+    <h2>Alertes en cours</h2>
+    <p class="card-subtitle">Surveillez les seuils critiques de votre aquarium.</p>
+
+    <div class="alert-list">
+      {% if alertes %}
+        {% for alerte in alertes %}
+        <div class="alert-item" {% if alerte.severite == 'warning' %}style="background:#fffbeb;"{% endif %}>
+          <div>
+            <div class="alert-title">{{ alerte.type_alerte|default:"Alerte" }}</div>
+            <div class="alert-meta">{{ alerte.message }} • {{ alerte.date_creation|date:"d/m/Y H:i" }}</div>
+          </div>
+          {% if alerte.severite == 'critical' %}
+          <span class="badge-critical">Critique</span>
+          {% else %}
+          <span class="badge-warning">Avertissement</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          ✅ Aucune alerte active. Votre aquarium est en bonne santé !
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Bloc actionneurs -->
+  <div class="card">
+    <h2>Contrôle des actionneurs</h2>
+    <p class="card-subtitle">Pilotez les équipements de l'aquarium.</p>
+
+    <div class="actuators-list">
+      {% if actionneurs %}
+        {% for actionneur in actionneurs %}
+        <div class="actuator-item">
+          <div>
+            <div class="actuator-label">{{ actionneur.nom }}</div>
+            <div class="alert-meta">
+              Type: {{ actionneur.type_actionneur }}
+              {% if actionneur.date_derniere_maj %}
+              • Dernière action : {{ actionneur.date_derniere_maj|date:"d/m/Y H:i" }}
+              {% endif %}
+            </div>
+          </div>
+          <div class="toggle {% if actionneur.etat_actuel %}is-on{% endif %}" 
+               data-id="{{ actionneur.id }}"
+               data-state="{% if actionneur.etat_actuel %}on{% else %}off{% endif %}"
+               onclick="toggleActionneur(this)"></div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          Aucun actionneur configuré. 
+          <a href="http://localhost:8000/docs" target="_blank" class="btn-link">Créer un actionneur</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 </section>
+
+<script>
+const API_URL = 'http://localhost:8000';
+
+async function toggleActionneur(element) {
+  const actionneurId = element.getAttribute('data-id');
+  const currentState = element.getAttribute('data-state') === 'on';
+  const newState = !currentState;
+  
+  // Désactive temporairement le toggle
+  element.classList.add('loading');
+  element.style.pointerEvents = 'none';
+  
+  try {
+    const response = await fetch(`${API_URL}/api/actionneurs/${actionneurId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        etat_actuel: newState
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Met à jour l'interface
+    if (newState) {
+      element.classList.add('is-on');
+      element.setAttribute('data-state', 'on');
+    } else {
+      element.classList.remove('is-on');
+      element.setAttribute('data-state', 'off');
+    }
+    
+    showNotification(`✅ Actionneur ${newState ? 'activé' : 'désactivé'} avec succès`, 'success');
+    
+  } catch (error) {
+    console.error('Erreur:', error);
+    showNotification(`❌ Erreur: ${error.message}`, 'error');
+  } finally {
+    // Réactive le toggle
+    element.classList.remove('loading');
+    element.style.pointerEvents = 'auto';
+  }
+}
+
+function showNotification(message, type) {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  notification.className = `notification-${type}`;
+  notification.style.display = 'block';
+  
+  setTimeout(() => {
+    notification.style.display = 'none';
+  }, 3000);
+}
+
+// Auto-refresh toutes les 30 secondes pour voir les changements
+setInterval(() => {
+  location.reload();
+}, 30000);
+</script>
 {% endblock %}

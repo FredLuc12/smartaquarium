@@ -1,20 +1,46 @@
 <!doctype html>
 <html lang="fr">
   <head>
-    <meta charset="UTF-8" />
-    <title>{% block title %}Smart Aquarium{% endblock %}</title>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Smart Aquarium{% endblock %}</title>
+  {% load static %}
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+    }
 
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-  </head>
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .page {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    main {
+      flex: 1;
+      padding: 24px 32px 32px;
+      background: #f3f4f6;
+      box-sizing: border-box;
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+  <link rel="stylesheet" href="{% static 'dashboard/css/main.css' %}" />
+</head>
+
+
   <body>
-    <!-- HEADER -->
-    {% include "partials/header.html" %}
-
-    <!-- CONTENU PRINCIPAL -->
-    <main>{% block content %} {% endblock %}</main>
-
-    <!-- FOOTER -->
-    {% include "partials/footer.html" %}
+    <div class="layout">
+      {% include "partials/header.html" %}
+      <div class="page">
+        <main>
+          {% block content %}{% endblock %}
+        </main>
+        {% include "partials/footer.html" %}
+      </div>
+    </div>
   </body>
 </html>
