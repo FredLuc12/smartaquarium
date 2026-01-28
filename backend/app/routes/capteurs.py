@@ -6,9 +6,15 @@ from app.database import get_db
 
 router = APIRouter(prefix="/api/capteurs", tags=["Capteurs"])
 
-@router.post("/", response_model=CapteurResponse)
+@router.post("/", response_model=CapteurResponse, status_code=201)
 def create_capteur(capteur: CapteurCreate, db: Session = Depends(get_db)):
-    """Créer un nouveau capteur"""
+    """Créer un nouveau capteur avec ID spécifié par Arduino"""
+    
+    # Vérifier si l'ID existe déjà
+    existing = db.query(Capteur).filter(Capteur.id == capteur.id).first()
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Capteur avec ID {capteur.id} existe déjà")
+    
     db_capteur = Capteur(**capteur.dict())
     db.add(db_capteur)
     db.commit()
@@ -17,7 +23,7 @@ def create_capteur(capteur: CapteurCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=list[CapteurResponse])
 def list_capteurs(actif: bool = None, db: Session = Depends(get_db)):
-    """Lister tous les capteurs (filtrable par actif/inactif)"""
+    """Lister tous les capteurs"""
     query = db.query(Capteur)
     if actif is not None:
         query = query.filter(Capteur.actif == actif)

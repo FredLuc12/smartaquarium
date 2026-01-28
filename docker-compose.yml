@@ -1,0 +1,106 @@
+version: "3.9"
+
+services:
+  # ======================
+  # Base de données PostgreSQL
+  # ======================
+  db:
+    image: postgres:15-alpine
+    container_name: smartaquarium-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aquarium}
+      POSTGRES_USER: ${POSTGRES_USER:-aquarium_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aquarium_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    expose:
+      - "5432"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aquarium_user} -d ${POSTGRES_DB:-aquarium}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartaquarium-network
+    restart: unless-stopped
+
+  # ======================
+  # API Backend FastAPI
+  # ======================
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smartaquarium-api
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aquarium_user}:${POSTGRES_PASSWORD:-aquarium_password}@db:5432/${POSTGRES_DB:-aquarium}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-False}
+      PORT: 8000
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    networks:
+      - smartaquarium-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ======================
+  # Frontend Django
+  # ======================
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.django
+    container_name: smartaquarium-frontend
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aquarium_user}:${POSTGRES_PASSWORD:-aquarium_password}@db:5432/${POSTGRES_DB:-aquarium}
+      API_URL: http://api:8000
+      API_URL_EXTERNAL: ${API_URL_EXTERNAL:-http://localhost:8000}
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:8080"
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./smartaquarium:/app/smartaquarium
+      - ./templates:/app/templates
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    networks:
+      - smartaquarium-network
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8080 --workers 3 smartaquarium.wsgi:application"
+
+volumes:
+  postgres_data:
+    driver: local
+  static_volume:
+    driver: local
+  media_volume:
+    driver: local
+
+networks:
+  smartaquarium-network:
+    driver: bridge

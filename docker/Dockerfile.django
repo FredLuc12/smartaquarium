@@ -1,0 +1,41 @@
+FROM python:3.11-slim
+
+LABEL maintainer="ton-email@ecole.fr"
+LABEL description="SmartAquarium Frontend - Django"
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier requirements.txt (s'il existe à la racine, sinon créer)
+COPY requirements.txt* ./
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt || \
+    pip install Django psycopg2-binary gunicorn requests django-environ django-cors-headers
+
+# Copier tout le projet Django
+COPY manage.py .
+COPY smartaquarium/ ./smartaquarium/
+COPY dashboard/ ./dashboard/
+
+# Créer les dossiers nécessaires
+RUN mkdir -p /app/staticfiles /app/media
+
+# Créer un utilisateur non-root
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 8080
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "3", "smartaquarium.wsgi:application"]

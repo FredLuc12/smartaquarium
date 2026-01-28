@@ -121,3 +121,23 @@ STATIC_URL = 'static/'
 LOGIN_URL = "/accounts/login"
 LOGIN_REDIRECT_URL = "/dashboard"
 LOGOUT_REDIRECT_URL = "/accounts/login"
+
+
+# =============================
+# CONFIGURATION DES FICHIERS STATIQUES
+# =============================
+import os
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Dossiers additionnels pour les fichiers statiques
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'dashboard', 'css'),
+]
+
+# Configuration des clés primaires (pour supprimer les warnings)
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

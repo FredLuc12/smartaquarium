@@ -4,6 +4,7 @@ from typing import Optional
 
 # ===== CAPTEURS =====
 class CapteurBase(BaseModel):
+    id: int = Field(..., description="ID du capteur (défini par Arduino)")
     nom: str
     type: str
     unite: str
@@ -25,12 +26,29 @@ class CapteurUpdate(BaseModel):
     actif: Optional[bool] = None
 
 class CapteurResponse(CapteurBase):
-    id: int
+    class Config:
+        from_attributes = True
+
+# ===== ACTIONNEURS =====
+class ActionneurBase(BaseModel):
+    id: int = Field(..., description="ID de l'actionneur (défini par Arduino)")
+    nom: str
+    type: str
+    etat: bool = False
+
+class ActionneurCreate(ActionneurBase):
+    pass
+
+class ActionneurUpdate(BaseModel):
+    etat: bool
+
+class ActionneurResponse(ActionneurBase):
+    derniere_mise_a_jour: datetime
     
     class Config:
         from_attributes = True
 
-# ===== MESURES =====
+# ===== MESURES (pas de changement) =====
 class MesureBase(BaseModel):
     capteur_id: int
     valeur: float
@@ -45,26 +63,7 @@ class MesureResponse(MesureBase):
     class Config:
         from_attributes = True
 
-# ===== ACTIONNEURS =====
-class ActionneurBase(BaseModel):
-    nom: str
-    type: str
-    etat: bool = False
-
-class ActionneurCreate(ActionneurBase):
-    pass
-
-class ActionneurUpdate(BaseModel):
-    etat: bool
-
-class ActionneurResponse(ActionneurBase):
-    id: int
-    derniere_mise_a_jour: datetime
-    
-    class Config:
-        from_attributes = True
-
-# ===== COMMANDES =====
+# ===== COMMANDES (pas de changement) =====
 class CommandeCreate(BaseModel):
     actionneur_id: int
     commande: str = Field(..., pattern="^(ON|OFF)$")
@@ -77,7 +76,7 @@ class CommandeResponse(CommandeCreate):
     class Config:
         from_attributes = True
 
-# ===== ALERTES =====
+# ===== ALERTES (pas de changement) =====
 class AlerteBase(BaseModel):
     capteur_id: int
     niveau: str = Field(..., pattern="^(warning|critical)$")

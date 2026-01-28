@@ -1,7 +1,15 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-sqlalchemy==2.0.23
+# FastAPI et serveur
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Base de données
+sqlalchemy==2.0.25
 psycopg2-binary==2.9.9
-python-dotenv==1.0.0
-pydantic==2.5.0
+
+# Validation et config
+pydantic==2.5.3
 pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# Utilitaires
+python-multipart==0.0.6

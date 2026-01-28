@@ -6,9 +6,15 @@ from app.database import get_db
 
 router = APIRouter(prefix="/api/actionneurs", tags=["Actionneurs"])
 
-@router.post("/", response_model=ActionneurResponse)
+@router.post("/", response_model=ActionneurResponse, status_code=201)
 def create_actionneur(actionneur: ActionneurCreate, db: Session = Depends(get_db)):
-    """Créer un nouvel actionneur"""
+    """Créer un nouvel actionneur avec ID spécifié par Arduino"""
+    
+    # Vérifier si l'ID existe déjà
+    existing = db.query(Actionneur).filter(Actionneur.id == actionneur.id).first()
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Actionneur avec ID {actionneur.id} existe déjà")
+    
     db_actionneur = Actionneur(**actionneur.dict())
     db.add(db_actionneur)
     db.commit()
