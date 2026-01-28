@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Capteurs | Smart Aquarium{% endblock %}
+
 {% block extra_css %}
 <style>
   .sensors-layout {
@@ -40,8 +41,21 @@
     text-align: left;
   }
 
+  .sensors-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
   .sensors-table tbody tr:nth-child(even) {
     background: #f9fafb;
+  }
+
+  .sensors-table tbody tr:hover {
+    background: #e0f2fe !important;
+  }
+
+  .sensors-table tbody tr.selected {
+    background: #bfdbfe !important;
   }
 
   .empty-row {
@@ -88,49 +102,59 @@
     background: #d1d5db;
   }
 
-  .link-xs {
-    font-size: 12px;
-    color: #0077c2;
-    text-decoration: none;
-  }
-
-  .link-xs:hover {
-    text-decoration: underline;
-  }
-
   .sensor-detail {
     background: #ffffff;
     border-radius: 12px;
     padding: 18px 20px;
     box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
     font-size: 14px;
+    position: sticky;
+    top: 20px;
   }
 
   .sensor-detail h2 {
     margin-top: 0;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
 
   .sensor-detail .placeholder {
     margin: 0;
     color: #9ca3af;
+    text-align: center;
+    padding: 40px 20px;
   }
 
-  .sensors-layout {
-    margin-top: 32px;          /* ajoute de l’air sous le header */
+  .detail-section {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
   }
 
-  .sensors-table {
-    max-width: 900px;          /* évite de s’étirer */
-    margin-top: 16px;
+  .detail-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
   }
-  .sensors-layout { margin-top: 0; }
+
+  .detail-value {
+    font-size: 16px;
+    color: #1f2937;
+  }
+
+  .detail-value.large {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0284c7;
+  }
+
   .page-container {
-      width: 100%;
-      max-width: 1100px;
-      margin-top: 0;
+    width: 100%;
+    max-width: 1100px;
+    margin-top: 0;
   }
-
 
   .btn-primary { background:#2563eb; color:white; }
   .btn-primary:hover { background:#1d4ed8; }
@@ -138,54 +162,446 @@
   .btn-danger:hover { background:#b91c1c; }
   .btn-outline { background:transparent; border:1px solid #9ca3af; }
   .btn-outline:hover { background:#f3f4f6; }
+
+  .alert-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #b91c1c;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    color: #1f2937;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+  }
+
+  .modal-close:hover {
+    color: #1f2937;
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+
+  .history-table th {
+    background: #f1f5f9;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .history-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .history-table tbody tr:hover {
+    background: #f9fafb;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+  }
+
+  .no-data {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  .mini-chart {
+    height: 150px;
+    margin-top: 12px;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-  <section class="sensors-layout">
-    <!-- Liste des capteurs -->
-    <div class="page-container">
-      <div class="sensors-list">
-        <h1>Capteurs</h1>
-        <p class="sensors-subtitle">
-          Gérez vos capteurs et consultez leur état en temps réel.
-        </p>
+{% if api_error %}
+<div class="alert-error">
+  ⚠️ {{ api_error }}
+</div>
+{% endif %}
 
-        <table class="sensors-table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Type</th>
-              <th>État</th>
-              <th>Dernière valeur</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Température eau #1</td>
-              <td>Sonde thermique</td>
+<section class="sensors-layout">
+  <div class="page-container">
+    <div class="sensors-list">
+      <h1>Capteurs</h1>
+      <p class="sensors-subtitle">
+        Gérez vos capteurs et consultez leur état en temps réel.
+      </p>
+
+      <table class="sensors-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Type</th>
+            <th>État</th>
+            <th>Dernière valeur</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if capteurs %}
+            {% for capteur in capteurs %}
+            <tr onclick="selectSensor({{ capteur.id }})" data-sensor-id="{{ capteur.id }}">
+              <td>{{ capteur.nom }}</td>
+              <td>{{ capteur.type }}</td>
               <td>
+                {% if capteur.actif %}
                 <span class="badge badge-active">Actif</span>
+                {% else %}
+                <span class="badge badge-inactive">Inactif</span>
+                {% endif %}
               </td>
-              <td>24.3 °C</td>
-              <td class="actions">
+              <td>
+                {% if capteur.derniere_mesure %}
+                  {{ capteur.derniere_mesure.valeur }} {{ capteur.unite|default:"" }}
+                {% else %}
+                  <em style="color: #9ca3af;">Aucune mesure</em>
+                {% endif %}
+              </td>
+              <td class="actions" onclick="event.stopPropagation()">
                 <button class="btn-xs btn-outline">Renommer</button>
                 <button class="btn-xs btn-danger">Supprimer</button>
-                <button class="btn-xs btn-primary">Consulter l’historique</button>
+                <button class="btn-xs btn-primary" onclick="openHistoryModal({{ capteur.id }}, '{{ capteur.nom }}')">
+                  Historique
+                </button>
               </td>
             </tr>
-          </tbody>
-        </table>
-      </div>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5" class="empty-row">
+                Aucun capteur configuré. 
+                <a href="http://localhost:8000/docs" target="_blank">Créer un capteur via l'API</a>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
+  </div>
 
-    <!-- Détail du capteur -->
-    <aside class="sensor-detail">
-      <h2>Détail du capteur</h2>
-      <p class="placeholder">
-        Sélectionnez un capteur dans la liste pour voir ses valeurs et son historique.
-      </p>
-    </aside>
-  </section>
+  <aside class="sensor-detail" id="sensorDetail">
+    <h2>Détail du capteur</h2>
+    <p class="placeholder">
+      👈 Cliquez sur un capteur dans la liste pour voir ses détails
+    </p>
+  </aside>
+</section>
+
+<!-- Modal Historique -->
+<div id="historyModal" class="modal-overlay" onclick="closeHistoryModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modalTitle">Historique du capteur</h2>
+      <button class="modal-close" onclick="closeHistoryModal()">&times;</button>
+    </div>
+    <div id="modalBody">
+      <div class="loading">Chargement...</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const API_URL = 'http://localhost:8000';
+let selectedSensorId = null;
+let miniChart = null;
+
+async function selectSensor(sensorId) {
+  selectedSensorId = sensorId;
+  
+  // Highlight de la ligne sélectionnée
+  document.querySelectorAll('.sensors-table tbody tr').forEach(tr => {
+    tr.classList.remove('selected');
+  });
+  document.querySelector(`tr[data-sensor-id="${sensorId}"]`)?.classList.add('selected');
+  
+  const detailPanel = document.getElementById('sensorDetail');
+  detailPanel.innerHTML = '<div class="loading">⏳ Chargement des détails...</div>';
+  
+  try {
+    // Récupère les infos complètes du capteur
+    const capteurResponse = await fetch(`${API_URL}/api/capteurs/${sensorId}`);
+    if (!capteurResponse.ok) throw new Error('Erreur lors de la récupération');
+    const capteur = await capteurResponse.json();
+    
+    // Récupère les 10 dernières mesures
+    const mesuresResponse = await fetch(`${API_URL}/api/mesures/capteur/${sensorId}`);
+    const mesures = mesuresResponse.ok ? await mesuresResponse.json() : [];
+    
+    const derniereMesure = mesures.length > 0 ? mesures[mesures.length - 1] : null;
+    
+    // Affiche les détails
+    let html = `
+      <h2>${capteur.nom}</h2>
+      
+      <div class="detail-section">
+        <div class="detail-label">Dernière valeur</div>
+        <div class="detail-value large">
+          ${derniereMesure ? `${derniereMesure.valeur} ${capteur.unite || ''}` : 'N/A'}
+        </div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-label">Type de capteur</div>
+        <div class="detail-value">${capteur.type}</div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-label">Localisation</div>
+        <div class="detail-value">${capteur.localisation || 'Non spécifiée'}</div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-label">Seuils</div>
+        <div class="detail-value">Min: ${capteur.seuil_min} ${capteur.unite || ''} • Max: ${capteur.seuil_max} ${capteur.unite || ''}</div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-label">État</div>
+        <div class="detail-value">
+          ${capteur.actif ? '<span class="badge badge-active">✓ Actif</span>' : '<span class="badge badge-inactive">✗ Inactif</span>'}
+        </div>
+      </div>
+    `;
+    
+    if (mesures.length > 0) {
+      html += `
+        <div class="detail-section">
+          <div class="detail-label">Évolution récente</div>
+          <canvas id="miniChart" class="mini-chart"></canvas>
+        </div>
+      `;
+    }
+    
+    html += `
+      <button class="btn-xs btn-primary" style="width: 100%; margin-top: 12px;" onclick="openHistoryModal(${capteur.id}, '${capteur.nom}')">
+        Voir l'historique complet
+      </button>
+    `;
+    
+    detailPanel.innerHTML = html;
+    
+    // Dessine le mini graphique
+    if (mesures.length > 0) {
+      drawMiniChart(mesures, capteur.unite);
+    }
+    
+  } catch (error) {
+    console.error('Erreur:', error);
+    detailPanel.innerHTML = `
+      <h2>Erreur</h2>
+      <p style="color: #dc2626;">Impossible de charger les détails du capteur.</p>
+    `;
+  }
+}
+
+function drawMiniChart(mesures, unite) {
+  const ctx = document.getElementById('miniChart');
+  if (!ctx) return;
+  
+  const last10 = mesures.slice(-10);
+  const labels = last10.map(m => {
+    const date = new Date(m.horodatage);
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  });
+  const data = last10.map(m => m.valeur);
+  
+  if (miniChart) miniChart.destroy();
+  
+  miniChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: `Valeur (${unite || ''})`,
+        data: data,
+        borderColor: '#0ea5e9',
+        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+        tension: 0.4,
+        fill: true,
+        pointRadius: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: false }
+      }
+    }
+  });
+}
+
+async function openHistoryModal(capteurId, capteurNom) {
+  const modal = document.getElementById('historyModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  
+  modal.classList.add('active');
+  modalTitle.textContent = `Historique - ${capteurNom}`;
+  modalBody.innerHTML = '<div class="loading">⏳ Chargement des données...</div>';
+  
+  try {
+    const capteurResponse = await fetch(`${API_URL}/api/capteurs/${capteurId}`);
+    if (!capteurResponse.ok) throw new Error('Impossible de récupérer les infos du capteur');
+    const capteur = await capteurResponse.json();
+    const unite = capteur.unite || '-';
+    
+    const mesuresResponse = await fetch(`${API_URL}/api/mesures/capteur/${capteurId}`);
+    if (!mesuresResponse.ok) throw new Error('Impossible de récupérer les mesures');
+    const mesures = await mesuresResponse.json();
+    
+    if (mesures.length === 0) {
+      modalBody.innerHTML = '<div class="no-data">📊 Aucune mesure enregistrée pour ce capteur.</div>';
+      return;
+    }
+    
+    let html = `
+      <div style="margin-bottom: 16px; padding: 12px; background: #f0f9ff; border-radius: 8px; font-size: 13px;">
+        <strong>Capteur:</strong> ${capteur.nom} (${capteur.type}) • 
+        <strong>Localisation:</strong> ${capteur.localisation || 'N/A'} • 
+        <strong>Seuils:</strong> ${capteur.seuil_min} - ${capteur.seuil_max} ${unite}
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Valeur</th>
+            <th>Unité</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    const sortedMesures = mesures
+      .sort((a, b) => new Date(b.horodatage) - new Date(a.horodatage))
+      .slice(0, 50);
+    
+    sortedMesures.forEach(mesure => {
+      let formattedDate = 'Date inconnue';
+      
+      if (mesure.horodatage) {
+        try {
+          const date = new Date(mesure.horodatage);
+          if (!isNaN(date.getTime())) {
+            formattedDate = date.toLocaleString('fr-FR', {
+              day: '2-digit',
+              month: '2-digit', 
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            });
+          }
+        } catch (e) {
+          formattedDate = mesure.horodatage;
+        }
+      }
+      
+      const valeur = mesure.valeur !== undefined ? mesure.valeur : 'N/A';
+      let valeurClass = '';
+      if (capteur.seuil_min !== null && valeur < capteur.seuil_min) {
+        valeurClass = 'style="color: #dc2626;"';
+      } else if (capteur.seuil_max !== null && valeur > capteur.seuil_max) {
+        valeurClass = 'style="color: #dc2626;"';
+      }
+      
+      html += `
+        <tr>
+          <td>${formattedDate}</td>
+          <td ${valeurClass}><strong>${valeur}</strong></td>
+          <td>${unite}</td>
+        </tr>
+      `;
+    });
+    
+    html += '</tbody></table>';
+    
+    if (mesures.length > 50) {
+      html += `<p style="text-align: center; margin-top: 16px; color: #6b7280; font-size: 13px;">
+        Affichage des 50 dernières mesures (${mesures.length} au total)
+      </p>`;
+    }
+    
+    modalBody.innerHTML = html;
+    
+  } catch (error) {
+    console.error('Erreur:', error);
+    modalBody.innerHTML = `<div class="alert-error">⚠️ ${error.message}</div>`;
+  }
+}
+
+function closeHistoryModal(event) {
+  if (!event || event.target.classList.contains('modal-overlay')) {
+    document.getElementById('historyModal').classList.remove('active');
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeHistoryModal();
+  }
+});
+</script>
 {% endblock %}
