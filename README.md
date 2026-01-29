@@ -487,3 +487,22 @@ Pour exposer l'API publiquement, utilisez un tunnel SSH :
 ```bash
 ssh -R 80:localhost:8000 serveo.net
 ```
+### Configuration de Wokwi 
+#### Configuration des connexions entre les différents composants
+
+```bash
+# Ajoutez un fichier diagram.json dans l'outil Wokwi
+```
+![alt text](image-1.png)
+
+#### Installations des différents packages
+![alt text](image-2.png)
+
+#### Simulation du circuit éléctrique
+![alt text](image.png)
+
+#### Visualisation général depuis l'outil
+```bash
+# Mise en place du code arduino dans la partie sketch.ino
+```
+![alt text](image-3.png)

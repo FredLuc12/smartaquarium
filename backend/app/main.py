@@ -5,7 +5,6 @@ from app.models import Capteur, Actionneur, Mesure, HistoriqueCommande, Alerte
 from app.routes import capteurs, mesures, actionneurs, commandes, alertes
 from app.config import settings
 
-# Créer les tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -14,10 +13,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS - Important pour le frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En production, remplacer par l'URL du frontend
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
